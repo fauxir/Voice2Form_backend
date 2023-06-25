@@ -1,0 +1,14 @@
+TO RUN: 
+
+python app.py
+
+TO INSTALL DEPPENDENCIES: 
+
+python -m venv env --> to install venv if not available
+.\env\Scripts\activate --> to activate venv for dependecies installation
+pip freeze > requirements.txt --> to create dependecies list
+
+Installed dependecies: 
+
+Flask
+OpenAi whisperer
