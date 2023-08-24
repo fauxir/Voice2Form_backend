@@ -1,7 +1,13 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import whisper
-from flask import jsonify
 import time
+import sqlite3
+import random
+import string
+import os
+import json
+import shutil 
+
 
 
 app = Flask(__name__)
@@ -41,5 +47,50 @@ def transcribe():
     print(f"Execution time: {execution_time} seconds")  # Print the execution time to the console
     return jsonify(data)
 
+
+db_path = "database/main.db"
+db_backup_path = "database/main_backup.db"  # Specify the backup file name and path
+
+# Function to create the database and table if they don't exist
+def create_db_table():
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute(
+        "CREATE TABLE IF NOT EXISTS YourTable (ID INTEGER PRIMARY KEY AUTOINCREMENT, Reference TEXT, Object TEXT)"
+    )
+    conn.commit()
+    conn.close()
+
+@app.route("/store_object", methods=["POST"])
+def store_object():
+    try:
+        # Backup the database before any write operations
+        if os.path.exists(db_path):
+            shutil.copy2(db_path, db_backup_path)  # Create a backup copy
+
+        # Check if the database exists, if not, create it
+        if not os.path.exists(db_path):
+            create_db_table()
+
+        data = request.json
+
+        # Generate a random 10-digit alphanumeric reference
+        reference = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+
+        # Store the object and reference in the database
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO YourTable (Reference, Object) VALUES (?, ?)",
+                       (reference, json.dumps(data)))
+        conn.commit()
+        conn.close()
+
+        return jsonify({"message": "Object stored successfully", "reference": reference}), 201
+    except Exception as e:
+        # If an error occurs during write operations, restore the backup
+        if os.path.exists(db_backup_path):
+            shutil.copy2(db_backup_path, db_path)  # Restore from backup
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
