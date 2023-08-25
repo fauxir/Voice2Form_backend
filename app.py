@@ -6,11 +6,13 @@ import random
 import string
 import os
 import json
+from flask_cors import CORS 
 import shutil 
 
 
 
 app = Flask(__name__)
+CORS(app, supports_credentials=True)
 
 @app.route("/", methods=["POST"])
 def transcribe():
@@ -91,6 +93,28 @@ def store_object():
         if os.path.exists(db_backup_path):
             shutil.copy2(db_backup_path, db_path)  # Restore from backup
         return jsonify({"error": str(e)}), 500
+
+# Function to retrieve an object based on the reference number
+@app.route("/api/getObject", methods=["GET"])
+def get_object():
+    try:
+        reference = request.args.get("number")
+
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("SELECT Object FROM YourTable WHERE Reference=?", (reference,))
+        result = cursor.fetchone()
+        conn.close()
+
+        if result:
+            object_data = json.loads(result[0])
+            return jsonify(object_data)
+        else:
+            return jsonify({"error": "Object not found"}), 404
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     app.run(debug=True)
