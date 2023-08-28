@@ -12,7 +12,8 @@ import shutil
 
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True)
+CORS(app, origins="https://stupendous-klepon-08e122.netlify.app", supports_credentials=True)  # Allow credentials
+
 
 @app.route("/", methods=["POST"])
 def transcribe():
@@ -108,7 +109,15 @@ def get_object():
 
         if result:
             object_data = json.loads(result[0])
-            return jsonify(object_data)
+
+            # Create a response with the retrieved object data
+            response = jsonify(object_data)
+
+            # Set the necessary CORS headers
+            response.headers.add("Access-Control-Allow-Origin", "https://stupendous-klepon-08e122.netlify.app")  # Replace with your front-end origin
+            response.headers.add("Access-Control-Allow-Credentials", "true")  # Set 'true' to allow credentials
+
+            return response
         else:
             return jsonify({"error": "Object not found"}), 404
 
