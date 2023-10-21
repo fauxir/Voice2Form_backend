@@ -12,7 +12,13 @@ import shutil
 
 
 app = Flask(__name__)
-CORS(app, origins="https://stupendous-klepon-08e122.netlify.app", supports_credentials=True)  # Allow credentials
+CORS(app, origins=["http://localhost:3000"])
+# api_v1_cors_config = {
+#     "origins": ["https://adf6-92-26-16-202.ngrok-free.app"]
+# }
+# CORS(app, resources={
+#     r"/api/*": api_v1_cors_config
+#     })  # Allow credentials
 
 
 @app.route("/", methods=["POST"])
@@ -114,8 +120,8 @@ def get_object():
             response = jsonify(object_data)
 
             # Set the necessary CORS headers
-            response.headers.add("Access-Control-Allow-Origin", "https://stupendous-klepon-08e122.netlify.app")  # Replace with your front-end origin
-            response.headers.add("Access-Control-Allow-Credentials", "true")  # Set 'true' to allow credentials
+            # response.headers.add("Access-Control-Allow-Origin", "https://stupendous-klepon-08e122.netlify.app")  # Replace with your front-end origin
+            # response.headers.add("Access-Control-Allow-Credentials", "true")  # Set 'true' to allow credentials
 
             return response
         else:
